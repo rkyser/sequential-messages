@@ -1,2 +1,8 @@
-# sequential-messages
-An experiment to receive messages in an orderly fashion
+# Sequential Messages
+
+This progam is intended to demonstrate an algorithm which:
+1. Sorts out-of-order messages
+2. Ignores duplicate messages
+
+A component relying upon the `OrderedMessageReceiver` can expect that all 
+messages dispatched are unique and sorted by the message's sequence ID.
