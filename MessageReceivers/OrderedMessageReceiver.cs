@@ -45,12 +45,12 @@ namespace SequentialMessages.MessageReceivers
             if (IsOldMessage(message))
             {
                 _stats.Ignored++;
-                _logger.Info(this, $"Ignoring old message from {message.Source}.");
+                _logger.Info(this, $"Ignoring old message [{message.SeqId}] from {message.Source}.");
             }
             else if (IsOutOfOrderMessage(message))
             {
                 _stats.OutOfOrder++;
-                _logger.Info(this, $"Stashing out-of-order message from {message.Source}.");
+                _logger.Info(this, $"Stashing out-of-order message [{message.SeqId}] from {message.Source}.");
                 _outOfOrderMessages.Add(message);
             }
             else
@@ -94,7 +94,11 @@ namespace SequentialMessages.MessageReceivers
 
             foreach (var message in _outOfOrderMessages.OrderBy(m => m.SeqId))
             {
-                if (IsNextMessage(message))
+                if (IsOldMessage(message))
+                {
+                    _outOfOrderMessages.Remove(message);
+                }
+                else if (IsNextMessage(message))
                 {
                     HandleNextMessage(message);
                     _outOfOrderMessages.Remove(message);
