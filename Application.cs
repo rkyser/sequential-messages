@@ -60,7 +60,7 @@ namespace SequentialMessages
 
         private void OnMessageReady(object sender, Message message)
         {
-            _logger.Info(typeof(Program).Name, $"Received {message.SeqId} from {message.Source}");
+            _logger.Info(this, $"Received {message.SeqId} from {message.Source}");
         }
     }
 }
