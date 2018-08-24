@@ -47,7 +47,7 @@ namespace SequentialMessages.MessageReceivers
                 _stats.Ignored++;
                 _logger.Info(this, $"Ignoring old message from {message.Source}.");
             }
-            else if (IsOutOfOrder(message))
+            else if (IsOutOfOrderMessage(message))
             {
                 _stats.OutOfOrder++;
                 _logger.Info(this, $"Stashing out-of-order message from {message.Source}.");
@@ -66,7 +66,7 @@ namespace SequentialMessages.MessageReceivers
             return message.SeqId < _nextSeqId;
         }
 
-        private bool IsOutOfOrder(Message message)
+        private bool IsOutOfOrderMessage(Message message)
         {
             return message.SeqId > _nextSeqId;
         }
