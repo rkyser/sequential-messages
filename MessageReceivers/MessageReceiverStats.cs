@@ -7,7 +7,7 @@ namespace SequentialMessages.MessageReceivers
     public class MessageReceiverStats
     {
         public int Ignored { get; set; }
-        public int Futured { get; set; }
+        public int OutOfOrder { get; set; }
         public int Immediate { get; set; }
         public int TotalReceived { get; set; }
         public int TotalForwarded { get; set; }

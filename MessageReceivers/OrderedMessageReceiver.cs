@@ -15,14 +15,14 @@ namespace SequentialMessages.MessageReceivers
         private readonly ILogger _logger;
         private readonly object _mutex;
         private readonly MessageReceiverStats _stats;
-        private List<Message> _futureMessages;
+        private readonly List<Message> _outOfOrderMessages;
         private long _nextSeqId;
         
         public OrderedMessageReceiver(ILogger logger)
         {
             _logger = logger;
             _mutex = new object();
-            _futureMessages = new List<Message>();
+            _outOfOrderMessages = new List<Message>();
             _nextSeqId = 0;
             _stats = new MessageReceiverStats();
         }
@@ -47,13 +47,13 @@ namespace SequentialMessages.MessageReceivers
                 _stats.Ignored++;
                 _logger.Info(this, $"Ignoring old message from {message.Source}.");
             }
-            else if (IsFutureMessage(message))
+            else if (IsOutOfOrder(message))
             {
-                _stats.Futured++;
-                _logger.Info(this, $"Stashing future message from {message.Source}.");
-                _futureMessages.Add(message);
+                _stats.OutOfOrder++;
+                _logger.Info(this, $"Stashing out-of-order message from {message.Source}.");
+                _outOfOrderMessages.Add(message);
             }
-            else if (IsNextMessage(message))
+            else
             {
                 _stats.Immediate++;
                 HandleNextMessage(message);
@@ -66,7 +66,7 @@ namespace SequentialMessages.MessageReceivers
             return message.SeqId < _nextSeqId;
         }
 
-        private bool IsFutureMessage(Message message)
+        private bool IsOutOfOrder(Message message)
         {
             return message.SeqId > _nextSeqId;
         }
@@ -85,19 +85,19 @@ namespace SequentialMessages.MessageReceivers
 
         private void FastForward()
         {
-            if (!_futureMessages.Any())
+            if (!_outOfOrderMessages.Any())
             {
                 return;
             }
 
             _stats.FastForwards++;
 
-            foreach (var message in _futureMessages.OrderBy(m => m.SeqId))
+            foreach (var message in _outOfOrderMessages.OrderBy(m => m.SeqId))
             {
                 if (IsNextMessage(message))
                 {
                     HandleNextMessage(message);
-                    _futureMessages.Remove(message);
+                    _outOfOrderMessages.Remove(message);
                 }
             }
         }
